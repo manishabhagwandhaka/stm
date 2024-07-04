@@ -1,0 +1,52 @@
+firewall-cmd --state   
+firewall-cmd --get-zones
+output:    dmz public drop external internal block 
+ls /usr/lib/firewalld/zones
+output:  block.xml  dmz.xml  drop.xml  external.xml  home.xml  internal.xml  public.xml  trusted.xml  work.xml
+firewall-cmd --get-default-zone
+firewall-cmd --list-all
+firewall-cmd --zone=dmz --list-all
+firewall-cmd --zone=dmz --change-interface=ens33
+firewall-cmd --zone=dmz --add-interface=ens33
+firewall-cmd --zone=dmz --remove-interface=ens33
+firewall-cmd --zone=dmz --list-interfaces
+firewall-cmd --zone=dmz --change-interface=ens33 --permanent
+firewall-cmd --reload
+firewall-cmd --set-default-zone=hpcsa --permanent
+firewall-cmd --reload
+firewall-cmd --new-zone=hpcsa --permanent
+firewall-cmd --reload
+firewalld --add-interface=ens33 --zone=hpcsa --permanent
+firewall-cmd --delete-zone=hpcsa --permanent
+firewall-cmd --reload
+firewall-cmd --get-services
+NOTE = all the services have their individual xml files, are located /usr.lib/firewalld/services
+firewall-cmd --zone=public --add-service=ssh --permanent
+firewall-cmd --zone=public --add-service={http,ssh,https} --permanent
+firewall-cmd --reload
+if you want to deny the access of ssh on the machine , so you just need to remove ssh servivces from
+the public (or current) zone
+firewall-cmd --zone=public --remove-service=ssh
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
+firewall-cmd --zone=public --add-port=2020/tcp --permanent
+firewall-cmd --zone=public --add-port=8080/tcp --add-port=8443/tcp --permanent    ....................   to multiple port
+firewall-cmd --reload
+firewall-cmd --list-all
+firewall-cmd --zone=public --remove-port=8080/tcp --permanent
+firewall-cmd --reload
+firewall-cmd --zone=public --list-all
+firewall logs we can see by the follwing command
+cd /var/log
+cat firewalld
+syntax for adding the rich rule by using  --add-rich-rule
+firewall-cmd --zone=dmz --add-rich-rule='rule family="ipv4" source address="192.168.144.134" reject' --permanent
+firewall-cmd --reload
+firewall-cmd --zone=dmz --list-all
+firewall-cmd --zone=dmz --add-rich-rule='rule family="ipv4" source address="192.168.144.135/24" service name="ssh" reject' --permanent
+firewall-cmd --reload
+firewall-cmd --zone=dmz --list-all
+- syntax for removing the rule
+firewall-cmd --zone=dmz --remove-rich-rule='rule family="ipv4" source address="192.168.144.135/24" reject' --permanent
+firewall-cmd --reload
+firewall-cmd --zone=dmz --list-all 
