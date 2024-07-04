@@ -1,0 +1,105 @@
+yum install squid -y             .. centos
+apt install squid -y             .. ubuntu
+-centos
+su - root 
+/etc/squid/                       ..........................  it stores the configuration
+/var/log/squid/                   ..........................  stores the log
+/var/spool/squid/                 ..........................  stores the cache (default)
+systemctl restart squid
+systemctl enable squid
+squid -k parse                     ......  this is to initialize each rule from squid configuration 
+squid -k check
+systemctl restart squid
+systemctl reload  squid
+squid -k reconfigure
+in centos go to preferences->newtork settings -> click on settings -> click on proxy add ip(server ip) and port(by default squid port is 3128)
+allow or deny internet acccess
+-----------  alllow internet for specific ip   ----------------
+vim /etc/squid/squid.conf
+acl internet_allow src 192.168.144.131 
+http_access allow internet_allow
+-deny internet for specific ip
+vim /etc/squid/squid.conf
+acl internet_deny src 192.168.144.131 
+http_access deny internet_deny
+-allow internet to hole network        -----------------------
+vim /etc/squid/squid.conf
+acl internet_allow src 192.168.144.0/24
+http_access allow internet_allow
+-deny internet to hole network
+vim /etc/squid/squid.conf
+acl internet_deny src 192.168.144.0/24
+http_access deny internet_deny
+vim /etc/squid/squid.conf
+acl blocksites dstdomain .facebook.com .youtube.com                (....   dstdomain is a reserved word dont change it)
+http_access deny blocksites
+=====================   if you want to allow or block specific website then make the entry of blocksites  ===================
+cat > /etc/squid/blocked-sites.squid                             (blocked-sites is a file name)
+tesla.com
+gmail.com
+vim /etc/squid/squid.conf
+acl blocksites dstdomain "/etc/squid/blockes-sites.squid"
+http_access deny blocksites
+-or
+vim /etc/squid/squid.conf
+acl blocksites url_regex "/etc/squid/blockes-sites.squid"
+http_access deny blocksites
+--port
+vim /etc/squid/squid.conf
+acl block_port port 80   
+http_access deny block_port
+vim /etc/squid/squid.conf
+acl safe_port port 80 21 443 563 70 210 1025-65535 
+http_access deny !safe_ports
+-words
+vim /etc/squid/block_keywords.txt
+gambling
+spyware
+bad
+vim /etc/squid/squid.conf
+acl bad_keyword url_regex "/etc/squid/block_keywords.txt"
+http_access deny bad_keyword
+-files
+vim /etc/squid/blockfiles.squid
+\.torrent.*$
+\.mp3.*$
+vim /etc/squid/squid.conf
+acl blockfiles url_regex "/etc/squid/blockfiles.squid"
+http_access deny blockfiles
+-set working hours
+---------    the internet will be off from   10 to 5
+vim /etc/squid/squid.conf
+acl working_hours time 10:00-17:00
+http_access deny working_hours
+---------
+curl -x 192.168.144.131:3128 http://testphp.vulnweb.com -I
+      output       x-cache: 
+                   x-cache-lookup:
+                   via:
+-to change the hostname
+vim /etc/squid/squid.conf
+visible_hostname aditi
+-to alllow specific header for squid to modify clients request
+#request_header_access user_agent allow all -instead of all there might be client ip  or etc
+# configure cache for squid
+cache_dir ufs /var/spool/squid 1500 19 256
+# assign cache memory
+cache_mem 200 MB
+# max size for an object
+maximum_object_size 300 MB
+# max size for cache file that will store in /var/spool/squid
+maximum_object_size_in_memory 5 KB
+# rule for cache to store some kind of data of file type
+acl images_cache url_regex -i .*\.(jpg|css|jpeg|icon|gif)
+cache allow images_cache
+> every time changes in rule 
+> do 
+squid -k check
+squid -k parse 
+squid -k reconfigure
+> first time when cache configuration add in /etc/squid/squid.conf 
+systemctl restart squid
+> check log in real time 
+# tail -f /var/log/squid/access.log
+# curl -x 192.168.144.136:3128 http://testphp.vulnweb.com -I
+                squid ip               website                 response header
