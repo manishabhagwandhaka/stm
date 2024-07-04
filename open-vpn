@@ -1,0 +1,53 @@
+CentOS - 7 : 
+Add two interfaces in VM one NAT and another custom Host-Only
+for clien add interface NAT
+ens33 : 192.168.206.133/24
+ens37 : 10.0.0.100/24 
+stop firewall on both vm
+# systemctl stop firewall 
+git clone https://github.com/angristan/openvpn-install.git
+cd openvpn-install
+a) Create a internal web server:
+# yum install httpd -y
+b) Open config:
+# vim /etc/httpd/conf/httpd.conf
+replace 
+Listen 80 to 
+Listen hostonly_ip:80
+:wq
+# systemctl restart httpd
+# systemctl status httpd
+NOTE: Now web server in running on hostonly_ip:80 only.
+on browser
+check output of host-only_ip 
+_________________
+```
+# wget https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
+# bash openvpn-install.sh
+IP address: host-only ip
+Public IPv4 address or hostname: NAT_ip
+Checking for IPv6 connectivity...
+Do you want to enable IPv6 support (NAT)? [y/n]: n
+Port choice [1-3]: 1
+Protocol [1-2]: 1
+DNS [1-12]: 11
+Enable compression? [y/n]: n
+Customize encryption settings? [y/n]: n
+Press any key to continue...
+Client name: kazama
+Do you want to protect the configuration file with a password?
+(e.g. encrypt the private key with a password)
+   1) Add a passwordless client
+   2) Use a password for the client
+Select an option [1-2]: 1
+Client kazama added.
+-On Server:`
+# scp -r /root/kazama.ovpn  root@NAT_ip:/root/
+root@192.168.206.134's password: 
+kazama.ovpn
+-On Client:
+# cd /etc/yum.repos.d/ &&  sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* && systemctl stop firewalld && systemctl disable firewalld $$ sentenforce 0 && cd -
+# yum install epel-release
+# yum install openvpn -y
+# openvpn --config ~/kazama.ovpn
+-client-on browser check the hostonly_ip of server
