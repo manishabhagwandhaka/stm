@@ -1,0 +1,65 @@
+in ubuntu
+sudo apt install snort -y
+vim /etc/snort/snort.conf
+     ......  comment the below line  ....
+      #ipvar HOME_NET any
+     ....... add the new line  .......
+ipvar HOME_NET 192.168.144.0/24
+and comment all the rules accept local files to comment all the rules use below command
+and also uncomment ---- include $RULE_PATH/local.rules
+sudo sed -i 's/^include $RULE_PATH/#include$RULE_PATH/' /etc/snort/snort.conf          (to comment the all rule) 
+to test or validate the snort rule configuration use below command
+sudo snort -T -i ens33 -c /etc/snort/snort.conf   
+-any pket detection
+vim /etc/snort/rules/local.rules
+alert ip any any -> any any (msg:"ip packet detected";sid:100001;rev:1;)                     (rev:1    is optional)
+-to run 
+snort -A console -q -i ens33 -c /etc/snort/snort.conf
+-ping detection rule
+vim /etc/snort/rules/local.rules
+alert icmp any any -> $HOME_NET any (msg:"icmp detected";sid:100001;rev:1;)             (rev:1    is optional)
+snort -A console -q -i ens33 -c /etc/snort/snort.conf
+instead of  $HOME_NET   you can also put the ip of ubuntu
+alert icmp any any -> 192.168.144.131 any (msg:"icmp packet detected";sid:100001;rev:1;)
+-ftp connection detection rule
+vim /etc/snort/rules/local.rules
+alert tcp any any -> $HOME_NET 21 (msg:"ftp connection";sid:100001;rev:1;)             (rev:1    is optional)
+snort -A console -q -i ens33 -c /etc/snort/snort.conf
+goes in windows command prompt put ubutnu ip
+ftp 192.168.144.131            (to verify ftp connnection)
+-flag detection rule
+vim /etc/snort/rules/local.rules
+alert tcp any any -> 192.168.144.131 ANY (flags:S;msg:"syn packets";sid:100002;rev:1;)            (rev:1    is optional)
+to run 
+snort -A console -q -i ens33 -c /etc/snort/snort.conf
+note : to check the scapy IP()/TCP()
+yum install epel-release -y
+sudo yum install scapy -y
+scapy                              (after installing just type scapy to get scapy shell(terminal))
+>>> a = IP()
+>>> b = TCP()
+>>> a.scr = "192.168.1.0"
+>>> a.dst = "192.168.144.131"
+>>> b.flags = "S"
+>>> send(a/b)
+-content detection
+vim /etc/snort/rules/local.rules
+alert tcp any any -> $HOME_NET 22 (msg:"SSH Attempt"; content:"SSH"; sid:1000003;rev: 1;)         (rev:1    is optional)
+snort -A console -q -i ens33 -c /etc/snort/snort.conf
+NOTE: To check use 'scapy' IP()/TCP()
+>>> a = IP()
+>>> b = TCP()
+>>> a.src = "192.168.1.0"
+>>> a.dst = "192.168.144.131"                   put your system ubuntu machine ip(snort)
+>>> b.flags = "S"
+>>> send(a/b/"SSH")
+-logging and storing ASCII
+vim /etc/snort/rules/local.rules
+alert tcp any any -> $HOME_NET 22 (content:"SSH";msg:"ssh attempt";sid:100001;rev:1;)             (rev:1    is optional)
+-to run 
+snort -A console -q -i ens33 -c /etc/snort/snort.conf -k ascii
+-variables 
+-  you can also create new 'var' for rules
+syntax :   var: <name> <value>
+var MY-NET[192.166.1.0/24 , 10.1.1.0/24]
+alert tcp any any -> $MY_NET any (flags:S;msg:"syn packets";sid:100001;)
