@@ -63,3 +63,14 @@ snort -A console -q -i ens33 -c /etc/snort/snort.conf -k ascii
 syntax :   var: <name> <value>
 var MY-NET[192.166.1.0/24 , 10.1.1.0/24]
 alert tcp any any -> $MY_NET any (flags:S;msg:"syn packets";sid:100001;)
+-ttl less than 128
+alert tcp any any -> any any (msg: "TTL LESS THAN 128"; ttl:<128; sid:100003;)
+-ttl:64;
+-ttl:<64;
+-ttl:>64;
+-DNS alert
+alert udp any 53 -> any any (msg: "DNS PACKET"; sid:100004;)
+-to check dns run command
+host www.tesla.com
+or
+curl www.youtube.com
